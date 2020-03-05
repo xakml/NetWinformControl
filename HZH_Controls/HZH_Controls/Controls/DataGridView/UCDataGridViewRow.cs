@@ -1,4 +1,4 @@
-﻿// ***********************************************************************
+// ***********************************************************************
 // Assembly         : HZH_Controls
 // Created          : 08-09-2019
 //
@@ -73,6 +73,12 @@ namespace HZH_Controls.Controls
             get;
             set;
         }
+
+        /// <summary>
+        /// 行号
+        /// </summary>
+        /// <value>The Index of the row.</value>
+        public int RowIndex { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is show CheckBox.
@@ -152,20 +158,44 @@ namespace HZH_Controls.Controls
                     var cs = this.panCells.Controls.Find("lbl_" + com.DataField, false);
                     if (cs != null && cs.Length > 0)
                     {
-                        var pro = DataSource.GetType().GetProperty(com.DataField);
-                        if (pro != null)
+                        if (DataSource is DataRow)
                         {
-                            var value = pro.GetValue(DataSource, null);
+                            DataRow row=DataSource as DataRow;
                             if (com.Format != null)
                             {
-                                cs[0].Text = com.Format(value);
+                                cs[0].Text = com.Format(row[com.DataField]);
                             }
                             else
                             {
-                                cs[0].Text = value.ToStringExt();
+                                cs[0].Text = row[com.DataField].ToStringExt();
+                            }
+                        }
+                        else
+                        {
+                            var pro = DataSource.GetType().GetProperty(com.DataField);
+
+                            if (pro != null)
+                            {
+                                var value = pro.GetValue(DataSource, null);
+                                if (com.Format != null)
+                                {
+                                    cs[0].Text = com.Format(value);
+                                }
+                                else
+                                {
+                                    cs[0].Text = value.ToStringExt();
+                                }
                             }
                         }
                     }
+                }
+            }
+            foreach (Control item in this.panCells.Controls)
+            {
+                if (item is IDataGridViewCustomCell)
+                {
+                    IDataGridViewCustomCell cell = item as IDataGridViewCustomCell;
+                    cell.SetBindSource(DataSource);
                 }
             }
         }
@@ -182,7 +212,8 @@ namespace HZH_Controls.Controls
                 CellClick(this, new DataGridViewEventArgs()
                 {
                     CellControl = this,
-                    CellIndex = (sender as Control).Tag.ToInt()
+                    CellIndex = (sender as Control).Tag.ToInt(),
+                    RowIndex = this.RowIndex
                 });
             }
         }
@@ -241,6 +272,7 @@ namespace HZH_Controls.Controls
                                 {
                                     CheckBoxChangeEvent(a, new DataGridViewEventArgs()
                                     {
+                                        RowIndex = this.RowIndex,
                                         CellControl = box,
                                         CellIndex = 0
                                     });
@@ -253,19 +285,28 @@ namespace HZH_Controls.Controls
                             var item = Columns[i - (IsShowCheckBox ? 1 : 0)];
                             this.panCells.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(item.WidthType, item.Width));
 
-                            Label lbl = new Label();
-                            lbl.Tag = i - (IsShowCheckBox ? 1 : 0);
-                            lbl.Name = "lbl_" + item.DataField;
-                            lbl.Font = new Font("微软雅黑", 12);
-                            lbl.ForeColor = Color.Black;
-                            lbl.AutoSize = false;
-                            lbl.Dock = DockStyle.Fill;
-                            lbl.TextAlign = item.TextAlign;
-                            lbl.MouseDown += (a, b) =>
+                            if (item.CustomCellType == null)
                             {
-                                Item_MouseDown(a, b);
-                            };
-                            c = lbl;
+                                Label lbl = new Label();
+                                lbl.Tag = i - (IsShowCheckBox ? 1 : 0);
+                                lbl.Name = "lbl_" + item.DataField;
+                                lbl.Font = new Font("微软雅黑", 12);
+                                lbl.ForeColor = Color.Black;
+                                lbl.AutoSize = false;
+                                lbl.Dock = DockStyle.Fill;
+                                lbl.TextAlign = item.TextAlign;
+                                lbl.MouseDown += (a, b) =>
+                                {
+                                    Item_MouseDown(a, b);
+                                };
+                                c = lbl;
+                            }
+                            else
+                            {
+                                Control cc = (Control)Activator.CreateInstance(item.CustomCellType);
+                                cc.Dock = DockStyle.Fill;
+                                c = cc;
+                            }
                         }
                         this.panCells.Controls.Add(c, i, 0);
                     }

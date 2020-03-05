@@ -16,26 +16,17 @@ namespace Test.UC
         public UCTestGridTable()
         {
             InitializeComponent();
-            ucDataGridView1.SizeChanged += ucDataGridView1_SizeChanged;
         }
 
-        void ucDataGridView1_SizeChanged(object sender, EventArgs e)
-        {
-            if (this.ucDataGridView1.Page != null)
-            {
-                this.ucDataGridView1.Page.PageSize = this.ucDataGridView1.ShowCount;
-               this.ucDataGridView1.DataSource= this.ucDataGridView1.Page.GetCurrentSource();
-            }
-        }
 
         private void UCTestGridTable_Load(object sender, EventArgs e)
         {
             List<DataGridViewColumnEntity> lstCulumns = new List<DataGridViewColumnEntity>();
             lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "ID", HeadText = "编号", Width = 70, WidthType = SizeType.Absolute });
-            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Name", HeadText = "姓名", Width = 50, WidthType = SizeType.Percent });
-            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Age", HeadText = "年龄", Width = 50, WidthType = SizeType.Percent });
-            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Birthday", HeadText = "生日", Width = 50, WidthType = SizeType.Percent, Format = (a) => { return ((DateTime)a).ToString("yyyy-MM-dd"); } });
-            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Sex", HeadText = "性别", Width = 50, WidthType = SizeType.Percent, Format = (a) => { return ((int)a) == 0 ? "女" : "男"; } });
+            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Name", HeadText = "姓名", Width = 100, WidthType = SizeType.Absolute });
+            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Age", HeadText = "年龄", Width = 500, WidthType = SizeType.Absolute });
+            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Birthday", HeadText = "生日", Width = 500, WidthType = SizeType.Absolute, Format = (a) => { return ((DateTime)a).ToString("yyyy-MM-dd"); } });
+            lstCulumns.Add(new DataGridViewColumnEntity() { DataField = "Sex", HeadText = "性别", Width = 500, WidthType = SizeType.Absolute, Format = (a) => { return ((int)a) == 0 ? "女" : "男"; } });
             this.ucDataGridView1.Columns = lstCulumns;
             this.ucDataGridView1.IsShowCheckBox = true;
             List<object> lstSource = new List<object>();
@@ -50,12 +41,8 @@ namespace Test.UC
                     Sex = i % 2
                 };
                 lstSource.Add(model);                
-            }
-
-            var page = new UCPagerControl2();
-            page.DataSource = lstSource;
-            this.ucDataGridView1.Page = page;
-            this.ucDataGridView1.First();
+            }          
+            this.ucDataGridView1.DataSource = lstSource;
         }
 
     }
